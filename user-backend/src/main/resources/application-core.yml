@@ -1,0 +1,11 @@
+server:
+  servlet:
+    session:
+      timeout: 86400
+    contextPath: ${CONTEXT_PATH:/user}
+  port: ${SERVER_PORT:8085}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/stream+json
+  forward-headers-strategy: framework
+
