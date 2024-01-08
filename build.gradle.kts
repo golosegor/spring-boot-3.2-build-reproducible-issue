@@ -8,7 +8,6 @@ plugins {
 //  id("org.springframework.boot") version "3.1.7" apply false
   id("io.spring.dependency-management") version "1.1.4"
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
-  jacoco
 }
 
 
