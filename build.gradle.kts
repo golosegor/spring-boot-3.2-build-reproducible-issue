@@ -7,7 +7,6 @@ plugins {
   id("org.springframework.boot") version "3.2.1" apply false
 //  id("org.springframework.boot") version "3.1.7" apply false
   id("io.spring.dependency-management") version "1.1.4"
-  id("org.sonarqube") version "4.0.0.2929"
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
   jacoco
 }
@@ -19,7 +18,7 @@ java {
 
 allprojects {
   apply(plugin = "java")
-  version = System.getenv("CI_COMMIT_REF_SLUG") ?: "0.0.1-SNAPSHOT"
+  version = "0.0.1-SNAPSHOT"
 
   repositories {
     mavenCentral()
@@ -27,8 +26,6 @@ allprojects {
 }
 
 subprojects {
-  apply(plugin = "org.sonarqube")
-  apply(plugin = "jacoco")
   dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
@@ -43,25 +40,10 @@ subprojects {
     reports {
       junitXml.required = true
     }
-    finalizedBy("jacocoTestReport")
-  }
-  tasks.withType<JacocoReport> {
-    dependsOn(tasks.named("check"))
-    reports {
-      xml.required = true
-      csv.required = true
-      html.required = true
-    }
   }
 }
 
 
-tasks.register("build-libraries") {
-  val librariesProject = project.allprojects - appServices().toSet()
-  librariesProject.forEach { projectPath ->
-    dependsOn(projectPath.tasks.named("check"))
-  }
-}
 
 fun appServices(): List<Project> {
   return listOf(project("template-backend"), project("user-backend"))
@@ -79,25 +61,8 @@ configure(appServices()) {
   }
 
   configure<JibExtension> {
-    val dockerRegistry = getDockerRegistry("CI_REGISTRY_IMAGE")
-    to {
-      image = "${dockerRegistry}${project.name}:${project.version}"
-    }
     from {
-      val fromRegistry = getDockerRegistry("CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX")
-      image = "${fromRegistry}eclipse-temurin:17-jre@sha256:53b7b641066b6ad46cc97d9356317299eea9b9b0759f8a863b86de564c7672c4"
+      image = "eclipse-temurin:17-jre@sha256:53b7b641066b6ad46cc97d9356317299eea9b9b0759f8a863b86de564c7672c4"
     }
-  }
-}
-
-
-
-
-fun getDockerRegistry(env: String): String {
-  val registry = System.getenv(env) ?: ""
-  return if (registry.isNotBlank()) {
-    "$registry/"
-  } else {
-    registry
   }
 }
